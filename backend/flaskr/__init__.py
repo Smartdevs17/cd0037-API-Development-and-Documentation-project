@@ -229,19 +229,22 @@ def create_app(test_config=None):
     def generate_quiz_question():
         body = request.get_json()
         try:
-
-            if not ( 'previous_questions' in body and 'quiz_category' in body):
+            if "previous_questions" and "quiz_category"  not in body:
                 abort(400)
                 
-            previous_questions = body.get('previous_questions')
-            category = body.get('quiz_category')
+            previous = body.get("previous_questions")
+            category = body.get("quiz_category")
 
-            if category['type'] == 'click':
-                available_questions = Question.query.filter(Question.id.notin_((previous_questions))).all()
+            if category["type"] == "click":
+                remaining_questions = Question.query.filter(Question.id.notin_((previous))).all()
             else:
-                available_questions = Question.query.filter_by(category=category['id']).filter(Question.id.notin_((previous_questions))).all()
+                remaining_questions = Question.query.filter_by(category=category["id"]).filter(Question.id.notin_((previous))).all()
 
-            question = available_questions[random.randrange(0, len(available_questions))].format() if len(available_questions) > 0 else None
+            if len(remaining_questions) >= 1 :
+                question = remaining_questions[random.randrange(0, len(remaining_questions))].format() 
+                
+            else: 
+                return None              
 
             return jsonify({
                 "success": True,
